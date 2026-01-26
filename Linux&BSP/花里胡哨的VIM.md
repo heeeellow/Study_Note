@@ -239,10 +239,67 @@ nmap <F11> <Plug>VimspectorStepInto
 :CocInstall coc-clangd coc-cmake coc-json coc-sh coc-vimlsp
 ```
 
-可选：安装调试器适配器
+可选项：
+安装调试器适配器
 ```
 :VimspectorInstall vscode-cpptools
 ```
+
+安装Nerd Font字体，官网地址：[font-downloads](https://www.nerdfonts.com/font-downloads)下载一款字体，推荐 "JetBrainsMono Nerd Font"。
+
+* **注意：如果进行c/c++开发，尤其是Linux驱动，可进行如下配置**
+
+这样可以解决一些找不到头文件的问题，如图：
+![](vx_images/530235220156879.png)
+
+如果使用cmake构建项目，在执行编译时添加参数：
+
+```cmake
+-DCMAKE_EXPORT_COMPILE_COMMANDS=1
+```
+然后把生成的 `compile_commands.json` 复制或软链接到项目根目录。
+
+如果使用make构建，可以安装bear
+
+```bash
+apt install bear
+```
+
+然后在编译时使用bear拦截编译参数
+
+```bash
+bear -- make
+```
+bear 会在当前目录下生成` compile_commands.json`只需要修改其中的内容就可以了。
+
+这时候再重新用vim打开代码，可能会出现如下报错：
+![](vx_images/106694481930154.png)
+
+这是因为目前使用的是GCC 编译器，并且开启了许多 GCC 专有的优化选项（比如 `-mrecord-mcount`, `-fconserve-stack` 等）。 而提供代码补全的 Clangd 是基于 LLVM/Clang 的，它不认识这些 GCC 的优化选项。解决方案就是添加一个配置文件，让Clangd忽略这些选项就可以了。
+
+在当前项目根目录下新建一个.clangd配置文件，填入如下内容：
+
+```yaml
+CompileFlags:
+  Remove:
+    - -mrecord-mcount
+    - -fconserve-stack
+    - -fno-allow-store-data-races
+    - -mfunction-return=thunk-extern
+    - -mindirect-branch-cs-prefix
+    - -mindirect-branch-register
+    - -mindirect-branch=thunk-extern
+    - -mpreferred-stack-boundary=3
+```
+然后重启vim就好了。
+
+也可以去用户的全局目录下创建相应的文件，这样就不用每次新建项目都去添加一次配置文件。
+
+```bash
+mkdir -p ~/.config/clangd
+vim ~/.config/clangd/config.yaml
+```
+同样写入上面的相关内容然后保存即可，如果还有别的报错，也可以根据log信息去加入对应的参数。
 
 ---
 
