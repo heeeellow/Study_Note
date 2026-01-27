@@ -319,6 +319,21 @@ vim ~/.config/clangd/config.yaml
 ```
 同样写入上面的相关内容然后保存即可，如果还有别的报错，也可以根据log信息去加入对应的参数。
 
+* 使用代码格式化时，可以在项目根目录创建一个名为 `.clang-format` 的文件，写入以下内容：
+
+```yaml
+BasedOnStyle: Google
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+BreakBeforeBraces: Linux
+AllowShortIfStatementsOnASingleLine: false
+IndentCaseLabels: false
+ColumnLimit: 80
+AccessModifierOffset: -4
+```
+这部分内容可根据使用习惯定制，自行参考clang-format的配置。
+
 ---
 
 
