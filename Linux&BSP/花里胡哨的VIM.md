@@ -7,9 +7,27 @@
 1.VIM版本要为9.0以上，自行检查，如果不是的话，使用PPA安装
 ```bash
 sudo add-apt-repository ppa:jonathonf/vim
-sudo apt update#Ubuntu发行版会自动更新，不需要手动
+sudo apt update
 sudo apt install vim
 ```
+
+建议去官方github拉取最新版(基于Ubuntu22.04-LTS jammy 版本，旧版本镜像可能无法使用):[下载地址](https://github.com/vim/vim-appimage/releases)。如果使用PPA安装的话可能会安装较旧的版本，导致部分插件功能无法使用。
+
+安装过程举例：
+```bash
+#切换到这个目录
+cd /usr/local/bin
+#使用wget拉取
+wget https://github.com/vim/vim-appimage/releases/download/v9.1.2110/Vim-v9.1.2110.glibc2.34-x86_64.AppImage -O vim_new
+#修改权限
+chmod +x vim_new
+# 备份旧的 vim (是个好习惯)
+mv /usr/bin/vim /usr/bin/vim.old
+# 建立软链接
+ln -s /usr/local/bin/vim_new /usr/bin/vim
+#最后进入vim查看版本
+```
+>如果网络太差，wget失败或者太慢的话，也可以手动下载AppImage文件然后传输到这个目录，重命名为vim_new再进行手动替换。
 
 2.将系统中的 Node.js 升级到最新的 LTS 版本（通常推荐 v18 或 v20）
 移除旧版本：
@@ -48,161 +66,156 @@ curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
 ## 二、vim配置文件
 
 ~/.vimrc
-```bash
-vim9script
-# ==========================================
-# 0. 插件管理 (基于 vim-plug)
-# ==========================================
+```vim
+" ====================================================================
+" 1. 插件管理 (Plug)
+" ====================================================================
 call plug#begin('~/.vim/plugged')
 
-# --- 核心大脑: LSP 与补全 ---
+" --- 核心大脑 ---
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
-# --- C++ 增强 ---
-# 既然用了 Vim9，我们用基于 Vim9 的高性能高亮插件，比旧版正则快得多
+" --- 颜值与界面 ---
+Plug 'tomasiser/vim-code-dark'          " VSCode 主题
+Plug 'sainnhe/gruvbox-material'         "经典的深色主题 (护眼)
+Plug 'vim-airline/vim-airline'          " 状态栏
+Plug 'vim-airline/vim-airline-themes'   " 状态栏主题
+Plug 'ryanoasis/vim-devicons'           " 文件图标(必须安装 Nerd Font)
+
+" --- C++ 语法高亮增强 (支持 Vim 9) ---
 Plug 'bfrg/vim-cpp-modern'
 
-# --- 界面美化 (颜值即正义) ---
-# 顶栏 Tab 栏和底栏状态条
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-# 经典的深色主题 (护眼)
-#Plug 'sainnhe/gruvbox-material'
-#仿VSCode主题
-Plug 'tomasiser/vim-code-dark'
-# 文件树图标 (必须安装 Nerd Font)
-Plug 'ryanoasis/vim-devicons'
-
-# --- 工程效率工具 (让手感像 IDE) ---
-# 左侧文件树
-Plug 'preservim/nerdtree'
-# 自动成对补全括号/引号 (写代码必备)
-Plug 'jiangmiao/auto-pairs'
-# 快速注释 (gcc 注释当前行)
-Plug 'tpope/vim-commentary'
-# 包裹修改神器 (cs"' 把双引号改单引号)
-Plug 'tpope/vim-surround'
-
-# --- 现代交互 ---
-# 模糊搜索 (像 VSCode 的 Ctrl+P)
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
-# 浮动终端 (按 F2 唤出，像 VSCode 的 Ctrl+`)
-Plug 'voldikss/vim-floaterm'
-# 调试器
-Plug 'puremourning/vimspector'
+" --- 效率工具 ---
+Plug 'preservim/nerdtree'               " 文件树
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " 模糊搜索核心
+Plug 'junegunn/fzf.vim'                 " 模糊搜索插件
+Plug 'tpope/vim-commentary'             " 快速注释 (gcc)
+Plug 'tpope/vim-surround'               " 包裹修改 (cs')
+Plug 'jiangmiao/auto-pairs'             " 自动补全括号
+Plug 'voldikss/vim-floaterm'            " 悬浮终端
+Plug 'puremourning/vimspector'          " 调试器
+Plug 'ojroques/vim-oscyank', {'branch': 'main'} " 剪切板同步
 
 call plug#end()
 
-# ==========================================
-# 1. 基础设置 (像工程师一样思考)
-# ==========================================
+" ====================================================================
+" 2. 基础设置 
+" ====================================================================
 set nocompatible
 filetype plugin indent on
 syntax on
 
-# 开启真彩色支持 (必须，否则主题很丑)
- set termguicolors
-# 开启鼠标支持 (偶尔点点很方便)
-set mouse=a
-# 显示行号和相对行号 (方便跳转)
-set number relativenumber
-# 高亮当前行
-set cursorline
-# 永远显示左侧标志列 (防止报错时屏幕抖动)
-set signcolumn=yes
-# 缩进设置 (C++ 标准 4 空格)
-set expandtab
-set tabstop=4
-set shiftwidth=4
-set softtabstop=4
+" --- 关键 ---
+set hidden                  " 允许在未保存时切换缓冲区
+set updatetime=100          " 缩短更新时间 
+set shortmess+=c            " 补全时不显示啰嗦的匹配信息
+set signcolumn=yes          " 强制显示左侧符号列 (防止报错时屏幕抖动)
+
+" --- 编辑体验 ---
+set number relativenumber   " 显示行号和相对行号 (方便跳转)
+set cursorline              " 高亮当前行
+set expandtab               " Tab 转空格
+set tabstop=4               " Tab 宽度 4
+set shiftwidth=4            " 缩进宽度 4
 set autoindent
 set smartindent
-# 搜索忽略大小写，除非包含大写
+set mouse=a                 " 允许鼠标操作(偶尔点点很方便)
+                            " 按住shift键鼠标可以切换为原来的选中模式
+"set encoding=utf-8
+set clipboard=unnamed       " 尝试与系统剪贴板互通
+
+" 搜索忽略大小写，除非包含大写
 set ignorecase
 set smartcase
-# 很多现代插件需要的更新时间设置
-set updatetime=100
-# 也就是 Backspace 可以删掉任何东西
+
+" 也就是 Backspace 可以删掉任何东西
 set backspace=indent,eol,start
 
-# --- 主题设置 ---
-# 设置背景为深色
+" --- 持久化撤销  ---
+" 即使关闭 Vim，再次打开文件也能撤销之前的修改
+set undofile
+set undodir=~/.vim/undodir
+if !isdirectory(&undodir)
+    call mkdir(&undodir, "p", 0700)
+endif
+
+" ====================================================================
+" 3. 主题与显示
+" ====================================================================
+" 强制开启真彩色 
+set termguicolors
+
+" 设置背景为深色
 set background=dark
+" 启用 codedark 主题
 colorscheme codedark
-#g:airline_theme = 'codedark'
-# 启用 Gruvbox Material 主题
-#g:gruvbox_material_background = 'hard'
-#colorscheme gruvbox-material
-# 让 Airline 自动匹配主题
-#g:airline_theme = 'gruvbox_material'
-# 开启顶部 Tab 栏 (类似 VSCode 顶部的文件标签)
-g:airline#extensions#tabline#enabled = 1
-g:airline#extensions#tabline#formatter = 'unique_tail'
-# 使用 Powerline 字体箭头
-g:airline_powerline_fonts = 1
+" 启用 Gruvbox Material 主题
+"let g:gruvbox_material_background = 'hard'
+"colorscheme gruvbox-material
+" 状态栏设置
+let g:airline_theme = 'codedark'
+"let g:airline_theme = 'gruvbox_material'
+let g:airline#extensions#tabline#enabled = 1  " 开启顶部 Tab 列表
+let g:airline_powerline_fonts = 1             " 使用箭头字体
 
-# ==========================================
-# 2. 键位映射 (Space Leader 系统)
-# ==========================================
-# 将 Leader 键映射为空格 (现代 Vim 的标配，大拇指最方便)
-g:mapleader = " "
+" ====================================================================
+" 4. 核心键位映射 (Space Leader)
+" ====================================================================
+let mapleader=" "
 
-# --- 常用快捷键 ---
-# 快速保存 (空格 + w)
+" 常用快捷键
 nnoremap <Leader>w :w<CR>
-# 快速退出 (空格 + q)
 nnoremap <Leader>q :q<CR>
-# 清除搜索高亮 (空格 + l)
 nnoremap <Leader>l :nohlsearch<CR>
 
-# --- 窗口切换 (Ctrl + hjkl) ---
+" 文件树
+nnoremap <Leader>e :NERDTreeToggle<CR>
+nnoremap <Leader>f :NERDTreeFind<CR>
+
+" 模糊搜索
+nnoremap <Leader>p :Files<CR>
+nnoremap <Leader>s :Rg<CR>
+
+" 悬浮终端 (F2)
+nnoremap <F2> :FloatermToggle<CR>
+tnoremap <F2> <C-\><C-n>:FloatermToggle<CR>
+
+" 调试 (F5/F9)
+nmap <F5> <Plug>VimspectorContinue
+nmap <F9> <Plug>VimspectorToggleBreakpoint
+nmap <F10> <Plug>VimspectorStepOver
+nmap <F11> <Plug>VimspectorStepInto
+
+" --- 窗口切换 (Ctrl + hjkl) ---
 nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
+" ====================================================================
+" 5. Coc.nvim 深度配置
+" ====================================================================
 
-# --- 插件快捷键 ---
-# 打开/关闭文件树 (空格 + e)
-nnoremap <Leader>e :NERDTreeToggle<CR>
-# 在当前文件定位文件树位置
-nnoremap <Leader>f :NERDTreeFind<CR>
+" --- 必须定义的 CheckBackspace 函数 ---
+" 没有这个，Tab 键补全会直接报错
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
 
-# 模糊搜索文件 (空格 + p, 习惯 VSCode 的 Cmd+P)
-nnoremap <Leader>p :Files<CR>
-# 搜索代码内容 (空格 + s)
-nnoremap <Leader>s :Rg<CR>
-
-# 浮动终端 (F2 开关)
-nnoremap <F2> :FloatermToggle<CR>
-tnoremap <F2> <C-\><C-n>:FloatermToggle<CR>
-
-# ==========================================
-# 3. Coc.nvim 深度配置 (IDE 的灵魂)
-# ==========================================
-# Tab 键选择补全
+" --- Tab 键逻辑：有补全选补全，没补全插入 Tab ---
 inoremap <silent><expr> <TAB>
       \ coc#pum#visible() ? coc#pum#next(1) :
       \ CheckBackspace() ? "\<Tab>" :
       \ coc#refresh()
 inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" 回车选中补全
 inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
                               \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
-function CheckBackspace()
-  var col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
-
-# 代码导航 (gd 跳转定义, gr 查看引用, K 查看文档)
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
-# K 键查看光标下函数的文档 (非常常用！)
-nnoremap <silent> K :call ShowDocumentation()<CR>
-
-function ShowDocumentation()
+" ---ShowDocumentation 函数 ---
+" 用于 K 键查看文档
+function! ShowDocumentation()
   if (index(['vim','help'], &filetype) >= 0)
     execute 'h '.expand('<cword>')
   elseif (coc#rpc#ready())
@@ -212,19 +225,24 @@ function ShowDocumentation()
   endif
 endfunction
 
-# 代码重命名 (空格 + rn)
-nmap <leader>rn <Plug>(coc-rename)
+" 常用跳转键位
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+" K 键查文档 (现在不会报错了)
+nnoremap <silent> K :call ShowDocumentation()<CR>
 
-# 格式化代码 (空格 + fm)
+" 重命名与格式化
+nmap <leader>rn <Plug>(coc-rename)
 nmap <leader>fm :call CocAction('format')<CR>
 
-# ==========================================
-# 4. Vimspector 调试配置
-# ==========================================
-nmap <F5> <Plug>VimspectorContinue
-nmap <F9> <Plug>VimspectorToggleBreakpoint
-nmap <F10> <Plug>VimspectorStepOver
-nmap <F11> <Plug>VimspectorStepInto
+
+" --- OSC Yank 配置 ---
+" 只有在支持 OSC52 的终端中才生效
+let g:oscyank_term = 'default'
+" 自动把 Vim 的 yank 操作同步到系统剪切板
+autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | OSCYank | endif
 ```
 文件中已经添加了仿vscode和gruvbox主题，可根据需要自行修改。
 
