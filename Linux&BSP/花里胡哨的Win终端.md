@@ -5,6 +5,7 @@
 ## 一、前期准备工作
 
 1、安装windows terminal，直接去微软应用商店搜索下载就可以了。
+
 ![](vx_images/464305003023022.png)
 
 2、安装新版本的PowerShell 7 (Core)，它更快、更强，而且背景默认是黑色的。
@@ -41,6 +42,7 @@ Install-Module PSReadLine -Force
 可以在`C:\Users\"你的用户名"`目录下面创建一个`.poshthemes`文件夹，后面把拉取的相关主题配置都存放在这里。
 
 2、去官网：[官网主题地址](https://ohmyposh.dev/docs/themes)选择一个你喜欢的主题，然后将配置文件`***.omp.json`拉取到我们上面创建的目录中。官网中也有相应的配置文档可供参考。我个人使用的是atomic主题。官网示例如图：
+
 ![](vx_images/290415348250909.png)
 
 3、修改启动配置文件 ($PROFILE)
